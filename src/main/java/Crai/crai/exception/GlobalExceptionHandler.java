@@ -5,6 +5,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +30,19 @@ public class GlobalExceptionHandler {
         }
         return new ResponseEntity<>(body, status);
     }
+
+    // Login: usuario o contraseña incorrectos
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> credencialesInvalidas(BadCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos", null);
+    }
+
+    // Login: usuario con acceso deshabilitado (estadoAcceso = 0)
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Map<String, Object>> usuarioDeshabilitado(DisabledException ex) {
+        return build(HttpStatus.FORBIDDEN, "El usuario tiene el acceso deshabilitado", null);
+    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> noEncontrado(ResourceNotFoundException ex) {

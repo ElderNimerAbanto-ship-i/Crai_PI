@@ -23,3 +23,8 @@ server:
 
 storage:
   location: "images"
+
+security:
+  jwt:
+    secret-key: ${CRAI_JWT_SECRET}
+    expiration-time: 300000
