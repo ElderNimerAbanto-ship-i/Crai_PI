@@ -31,4 +31,4 @@ storage:
 security:
   jwt:
     secret-key: ${CRAI_JWT_SECRET}
-    expiration-time: 300000
+    expiration-time: 1200000
