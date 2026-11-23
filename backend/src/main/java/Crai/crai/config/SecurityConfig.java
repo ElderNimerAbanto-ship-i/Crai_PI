@@ -39,6 +39,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // publicos
                         .requestMatchers("/error").permitAll()
+                        // nueva linea para el despliegue
+                        .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/favicon.ico", "/media/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()

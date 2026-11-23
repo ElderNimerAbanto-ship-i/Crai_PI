@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // Permitimos todo: /api/** e /images/**
-                .allowedOrigins("http://localhost:4200") // El puerto de Angular
+                .allowedOriginPatterns("http://localhost:4200", "https://*.trycloudflare.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);

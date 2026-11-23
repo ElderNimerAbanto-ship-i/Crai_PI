@@ -1,1 +1,1 @@
-export const API = '/api/v1';
+export const API = '/crai/api/v1';
