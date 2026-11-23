@@ -1,0 +1,51 @@
+
+.pila { 
+  position: fixed; 
+  right: 16px; 
+  bottom: 16px; 
+  display: grid; 
+  gap: 8px; 
+  width: min(420px, calc(100% - 32px)); 
+  z-index: 50; 
+}
+
+.aviso { 
+  display: flex; 
+  justify-content: space-between; 
+  gap: 12px; 
+  align-items: start; 
+  padding: 12px 14px; 
+  border-radius: var(--radio); 
+  border: 1px solid; 
+  background: var(--papel); 
+  font-size: 0.95rem; 
+  box-shadow: 0 4px 14px rgb(27 38 48 / 0.15); 
+}
+
+.aviso.ok { 
+  background: var(--ok-fondo); 
+  border-color: var(--ok); 
+  color: #124730; 
+}
+
+.aviso.error { 
+  background: var(--error-fondo); 
+  border-color: var(--error); 
+  color: #6e1d1d; 
+}
+
+.aviso.info { 
+  background: var(--info-fondo); 
+  border-color: #4b7ba3; 
+  color: #1e3d58; 
+}
+
+button { 
+  background: none; 
+  border: 0; 
+  font-size: 1.3rem; 
+  line-height: 1; 
+  cursor: pointer; 
+  color: inherit; 
+  padding: 0 2px; 
+}

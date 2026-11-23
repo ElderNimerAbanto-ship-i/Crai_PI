@@ -1,0 +1,167 @@
+<section class="pagina estrecha">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Reservar una sala de estudio</h1>
+      <p>La reserva empieza ahora y es solo para hoy. Necesitas entre 3 y 8 personas, contigo incluido.</p>
+    </div>
+  </div>
+
+  @if (paso() < 3) {
+    <ol class="pasos" aria-label="Pasos de la reserva">
+      <li [class.activo]="paso() === 1" [class.hecho]="paso() > 1">Integrantes</li>
+      <li [class.activo]="paso() === 2">Actividad y sala</li>
+    </ol>
+  }
+
+  @if (paso() === 1) {
+    <div class="panel">
+      <h2>¿Quiénes usarán la sala?</h2>
+      <p class="muted intro">Escribe el código universitario y valídalo. Todos deben ser estudiantes con acceso habilitado.</p>
+      <div class="personas">
+        @for (p of personas(); track $index) {
+          <div class="persona" [class.ok]="p.validado" [class.mal]="p.error">
+            <label [for]="'p' + $index">{{ etiqueta($index) }}</label>
+            <div class="entrada">
+              <input
+                [id]="'p' + $index"
+                [ngModel]="p.codigo"
+                (ngModelChange)="alEscribir($index, $event)"
+                (keydown.enter)="validar($index)"
+                (blur)="validar($index)"
+                autocomplete="off"
+                placeholder="Código universitario"
+              />
+              @if ($index >= MIN) {
+                <button type="button" class="btn btn-peligro btn-chico" (click)="quitar($index)" [attr.aria-label]="'Quitar ' + etiqueta($index)">Quitar</button>
+              }
+            </div>
+            @if (p.validando) { <span class="ayuda">Validando…</span> }
+            @if (p.validado) { <span class="valido">{{ p.validado.nombrePersona }}@if (p.validado.escuela) { · {{ p.validado.escuela }} }</span> }
+            @if (p.error) { <span class="error-campo">{{ p.error }}</span> }
+          </div>
+        }
+      </div>
+      <div class="form-acciones">
+        @if (personas().length < MAX) {
+          <button type="button" class="btn btn-sec" (click)="agregar()">Agregar integrante</button>
+        }
+        <button type="button" class="btn" [disabled]="!todosValidados()" (click)="irAPaso2()">Continuar</button>
+      </div>
+      <p class="ayuda cuenta">{{ personas().length }} de {{ MAX }} personas como máximo.</p>
+    </div>
+  }
+
+@if (paso() === 2) {
+    <div class="panel">
+      <h2>Sala, horario y actividad</h2>
+
+      <fieldset class="campo">
+        <legend class="etiqueta">Duración</legend>
+        <div class="opciones">
+          @for (d of duraciones; track d) {
+            <label class="opcion" [class.sel]="duracion() === d">
+              <input type="radio" name="dur" [checked]="duracion() === d" (change)="cambiarDuracion(d)" />
+              {{ d === 60 ? '1 hora' : d === 90 ? '1 hora 30 min' : '2 horas' }}
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <div class="bloque">
+        <button type="button" class="btn btn-sec" (click)="alternarSalas()" [attr.aria-expanded]="salasAbiertas()" aria-controls="lista-salas">
+          Salas {{ salasAbiertas() ? '▴' : '▾' }}
+        </button>
+        @if (salaSel() && !salasAbiertas()) {
+          <span class="muted elegida">Sala elegida: <strong>{{ salaSel()!.nombre }}</strong></span>
+        }
+      </div>
+
+      @if (salasAbiertas()) {
+        <div id="lista-salas" class="lista-salas">
+          @for (s of salas(); track s.idSala) {
+            <button type="button" class="sala-btn" [class.sel]="salaSel()?.idSala === s.idSala" [disabled]="!admiteGrupo(s)" (click)="elegirSala(s)">
+              <strong>{{ s.nombre }}</strong>
+              <small>{{ textoSala(s) }}</small>
+            </button>
+          } @empty {
+            <p class="muted">No hay salas registradas.</p>
+          }
+        </div>
+      }
+
+      @if (salaSel()) {
+        <div class="bloque">
+          <span class="etiqueta">Horarios de {{ salaSel()!.nombre }} para hoy</span>
+          @if (cargandoHorarios()) {
+            <p class="cargando">Cargando horarios…</p>
+          } @else {
+            <div class="horarios" role="group" [attr.aria-label]="'Horarios de ' + salaSel()!.nombre">
+              @for (h of horarios(); track h.horaInicio) {
+                <button
+                  type="button"
+                  class="horario"
+                  [class.ocupado]="h.estado === 'OCUPADO'"
+                  [class.pasado]="h.estado === 'PASADO' || h.estado === 'MANTENIMIENTO'"
+                  [class.sel]="horarioSel()?.horaInicio === h.horaInicio"
+                  [disabled]="h.estado !== 'LIBRE'"
+                  [attr.aria-pressed]="horarioSel()?.horaInicio === h.horaInicio"
+                  (click)="elegirHorario(h)"
+                >
+                  <span class="num">{{ hora(h.horaInicio) }} a {{ hora(h.horaFin) }}</span>
+                  <small>{{ textoHorario(h) }}</small>
+                </button>
+              } @empty {
+                <p class="muted">No hay horarios disponibles para esta duración.</p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (salaSel() && horarioSel()) {
+        <div class="disp si" aria-live="polite">
+          Reservarás <strong>{{ salaSel()!.nombre }}</strong> de {{ hora(horarioSel()!.horaInicio) }} a {{ hora(horarioSel()!.horaFin) }}.
+          Tendrán 5 minutos para ingresar.
+        </div>
+      }
+
+      <div class="campo">
+        <label for="act">Actividad académica</label>
+        <select id="act" [(ngModel)]="actividad">
+          <option value="" disabled>Elige una actividad</option>
+          @for (a of actividades; track a.valor) { <option [value]="a.valor">{{ a.texto }}</option> }
+        </select>
+      </div>
+
+      <label class="reglas">
+        <input type="checkbox" [(ngModel)]="aceptaReglas" />
+        <span>Acepto las reglas de uso: cuidar el mobiliario, mantener silencio, no consumir alimentos y dejar la sala libre al terminar el tiempo.</span>
+      </label>
+
+      <div class="form-acciones">
+        <button type="button" class="btn btn-sec" (click)="paso.set(1)">Volver</button>
+        <button type="button" class="btn" [disabled]="!puedeConfirmar()" (click)="confirmar()">{{ enviando() ? 'Reservando…' : 'Confirmar reserva' }}</button>
+      </div>
+    </div>
+  }
+
+  @if (paso() === 3 && resultado(); as r) {
+    <div class="panel confirmacion">
+      <h2>Reserva confirmada</h2>
+      <p class="sala-grande">{{ r.nombreSala }}</p>
+      <p class="horario num">{{ hora(r.horaInicio) }} a {{ hora(r.horaFin) }} <span class="muted">· {{ r.duracionMinutos }} min</span></p>
+      <p class="muted">{{ r.mensaje }}</p>
+      <h3>Integrantes</h3>
+      <ul class="lista-int">
+        <li><strong>{{ r.responsable.nombrePersona }}</strong> <span class="muted">(responsable) · {{ r.responsable.codigoUni }}</span></li>
+        @for (i of r.integrantes; track i.codigoUni) { <li>{{ i.nombrePersona }} <span class="muted">· {{ i.codigoUni }}</span></li> }
+      </ul>
+      <!--
+      <div class="form-acciones">
+        <a routerLink="/home" class="btn">Ver estado de las salas</a>
+        <button type="button" class="btn btn-sec" (click)="nueva()">Hacer otra reserva</button>
+      </div>
+      -->
+    </div>
+  }
+</section>

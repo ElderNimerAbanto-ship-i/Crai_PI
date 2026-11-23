@@ -1,0 +1,7 @@
+.pie {
+     border-top: 1px solid var(--linea);
+     padding-block: 22px; 
+     font-size: 0.9rem; 
+     display: grid; 
+     gap: 4px;
+}

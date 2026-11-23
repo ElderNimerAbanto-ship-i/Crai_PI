@@ -1,0 +1,8 @@
+@if (imagen()) {
+  <img class="portada" [src]="imagen()" [alt]="'Portada de ' + titulo()" loading="lazy" />
+} @else {
+  <div class="portada generada" [style.--h]="tono()" role="img" [attr.aria-label]="'Portada de ' + titulo()">
+    <span class="gt">{{ titulo() }}</span>
+    <span class="ga">{{ autor() }}</span>
+  </div>
+}
