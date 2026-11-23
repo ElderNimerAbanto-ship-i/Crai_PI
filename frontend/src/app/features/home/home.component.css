@@ -1,0 +1,89 @@
+.catalogo { 
+  display: grid; 
+  gap: 22px; 
+}
+
+.catalogo-cabecera { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: baseline; 
+  gap: 12px; 
+  flex-wrap: wrap; 
+}
+
+.categoria { 
+  display: grid; 
+  gap: 12px; 
+}
+
+.categoria h3 { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  padding-bottom: 8px; 
+  border-bottom: 2px solid var(--laton); 
+}
+
+.estante { 
+  display: grid; 
+  gap: 18px; 
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+}
+
+.libro { 
+  display: grid; 
+  grid-template-rows: auto 1fr; 
+  gap: 10px; 
+}
+
+.datos { 
+  display: grid; 
+  gap: 4px; 
+  align-content: start; 
+}
+
+.datos h4 { 
+  font: 600 1rem var(--serif); 
+  margin: 0; 
+}
+
+.meta { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 4px; 
+  margin: 2px 0; 
+}
+
+.disp { 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
+
+.disp.ok { 
+  color: var(--ok); 
+}
+
+.disp.no { 
+  color: var(--error); 
+}
+
+.barra { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  gap: 16px; 
+  flex-wrap: wrap; 
+}
+
+.bienvenida { 
+  margin: 0; 
+  max-width: 60ch; 
+  color: #292C32; 
+  font-size: 1.05rem; 
+}
+
+.buscador { 
+  width: 100%; 
+  max-width: 320px; 
+  margin-left: auto; 
+}

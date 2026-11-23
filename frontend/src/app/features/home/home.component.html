@@ -1,0 +1,55 @@
+<section class="pagina catalogo">
+  <div class="catalogo-cabecera">
+    <h1>Catálogo por categoría</h1>
+  </div>
+
+  <div class="barra">
+    <p class="bienvenida">Estimado Estudiante, bienvenido a nuestro sistema. Aquí encontrarás distintos libros.</p>
+    @if (libros()) {
+      <div class="buscador">
+        <input
+          type="search"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+          placeholder="Buscar libro"
+          aria-label="Buscar libro"
+        />
+      </div>
+    }
+  </div>
+
+  @if (librosError()) {
+    <div class="panel vacio">No se pudo cargar el catálogo de libros. Revisa que el backend esté encendido.</div>
+  } @else if (!libros()) {
+    <p class="cargando">Cargando libros…</p>
+  } @else {
+    @for (g of porCategoria(); track g.categoria) {
+      <div class="categoria">
+        <h3>
+          {{ g.categoria }}
+          <span class="sello sello-neutro">{{ g.libros.length }} {{ g.libros.length === 1 ? 'libro' : 'libros' }}</span>
+        </h3>
+        <div class="estante">
+          @for (l of g.libros; track l.idLibro) {
+            <article class="libro">
+              <app-book-cover [titulo]="l.titulo" [autor]="l.autor" [imagen]="l.imagen" />
+              <div class="datos">
+                <h4>{{ l.titulo }}</h4>
+                <p class="muted">{{ l.autor }}</p>
+                @if (l.seccionEspecial) { <p class="meta"><span class="sello sello-info">{{ l.seccionEspecial }}</span></p> }
+                <p [class]="l.ejemplaresDisponibles > 0 ? 'disp ok' : 'disp no'">
+                  @if (l.ejemplaresDisponibles > 0) { {{ l.ejemplaresDisponibles }} {{ l.ejemplaresDisponibles === 1 ? 'ejemplar disponible' : 'ejemplares disponibles' }} }
+                  @else { Sin ejemplares disponibles }
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    } @empty {
+      <p class="vacio panel">
+        @if (busqueda()) { No hay libros que coincidan con "{{ busqueda() }}". } @else { Aún no hay libros en el catálogo. }
+      </p>
+    }
+  }
+</section>
