@@ -23,4 +23,12 @@ public interface ControlIngresoRepository extends JpaRepository<ControlIngreso, 
     List<Object[]> ingresosPorEscuela(@Param("desde") LocalDateTime desde,
                                       @Param("hasta") LocalDateTime hasta,
                                       @Param("excluido") Rol excluido);
+
+    // Mismo filtro que ingresosPorEscuela: solo ENTRADA, rango [desde, hasta) y sin el rol excluido
+    @Query("SELECT COUNT(c) FROM ControlIngreso c JOIN c.usuario u " +
+            "WHERE c.tipoAcceso = 'ENTRADA' AND c.fechaHora >= :desde AND c.fechaHora < :hasta " +
+            "AND u.rol <> :excluido")
+    long contarEntradas(@Param("desde") LocalDateTime desde,
+                        @Param("hasta") LocalDateTime hasta,
+                        @Param("excluido") Rol excluido);
 }
