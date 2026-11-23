@@ -11,6 +11,9 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.hibernate.JDBCException;
+import org.springframework.dao.DataAccessException;
+import java.sql.SQLException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -42,7 +45,42 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> usuarioDeshabilitado(DisabledException ex) {
         return build(HttpStatus.FORBIDDEN, "El usuario tiene el acceso deshabilitado", null);
     }
+    // Errores de Oracle que llegan envueltos por JPA/Hibernate (triggers, procedimientos, etc.).
+    // Antes no se controlaban: Spring hacia forward a /error, Security respondia 401 y el
+    // frontend cerraba la sesion y mandaba al /login.
+    @ExceptionHandler({DataAccessException.class, JDBCException.class})
+    public ResponseEntity<Map<String, Object>> errorBaseDatos(Exception ex) {
+        SQLException sql = buscarSqlException(ex);
+        if (sql != null) {
+            int codigo = sql.getErrorCode();
+            // ORA-20020: trg_ingreso_alterna (dos ENTRADA seguidas)
+            if (codigo == 20020) {
+                return build(HttpStatus.CONFLICT, "El usuario ya se encuentra registrado", null);
+            }
+            // ORA-20000 a ORA-20999: RAISE_APPLICATION_ERROR -> regla de negocio, se muestra su texto
+            if (codigo >= 20000 && codigo <= 20999) {
+                return build(HttpStatus.CONFLICT, mensajeOracle(sql.getMessage()), null);
+            }
+        }
+        LoggerFactory.getLogger(GlobalExceptionHandler.class).error("Error de base de datos", ex);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Error en la base de datos al procesar la operacion", null);
+    }
 
+    private SQLException buscarSqlException(Throwable ex) {
+        Throwable t = ex;
+        while (t != null) {
+            if (t instanceof SQLException s) return s;
+            t = t.getCause();
+        }
+        return null;
+    }
+
+    // "ORA-20017: El usuario alcanzo...\nORA-06512: at ..." -> "El usuario alcanzo..."
+    private String mensajeOracle(String original) {
+        if (original == null) return "Operacion rechazada por la base de datos";
+        String linea = original.split("\\R")[0];
+        return linea.replaceFirst("^ORA-\\d+:\\s*", "").trim();
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> noEncontrado(ResourceNotFoundException ex) {
