@@ -10,6 +10,7 @@ import { ReservasAdminComponent } from './features/reservas/reservas-admin/reser
 import { UsuariosComponent } from './features/usuarios/usuarios.component';
 import { IngresosComponent } from './features/ingresos/ingresos.component';
 import { ConfiguracionComponent } from './features/configuracion/configuracion.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { LoginComponent } from './features/login/login.component';
 import { adminGuard, invitadoGuard } from './core/guards/auth.guard';
 
@@ -34,6 +35,7 @@ export const routes: Routes = [
       { path: 'usuarios', component: UsuariosComponent, canActivate: [adminGuard] },
       { path: 'ingresos', component: IngresosComponent, canActivate: [adminGuard] },
       { path: 'configuracion', component: ConfiguracionComponent, canActivate: [adminGuard] },
+      { path: 'dashboard', component: DashboardComponent, canActivate: [adminGuard] },
     ],
   },
   { path: '**', redirectTo: 'home' },
