@@ -6,6 +6,10 @@ import { LibroFormComponent } from './features/libros/libro-form/libro-form.comp
 import { EjemplaresComponent } from './features/ejemplares/ejemplares.component';
 import { PrestamosComponent } from './features/prestamos/prestamos.component';
 import { ReservarComponent } from './features/reservas/reservar/reservar.component';
+import { ReservasAdminComponent } from './features/reservas/reservas-admin/reservas-admin.component';
+import { UsuariosComponent } from './features/usuarios/usuarios.component';
+import { IngresosComponent } from './features/ingresos/ingresos.component';
+import { ConfiguracionComponent } from './features/configuracion/configuracion.component';
 import { LoginComponent } from './features/login/login.component';
 import { adminGuard, invitadoGuard } from './core/guards/auth.guard';
 
@@ -26,6 +30,10 @@ export const routes: Routes = [
       { path: 'libros/editar/:id', component: LibroFormComponent, canActivate: [adminGuard] },
       { path: 'ejemplares', component: EjemplaresComponent, canActivate: [adminGuard] },
       { path: 'prestamos', component: PrestamosComponent, canActivate: [adminGuard] },
+      { path: 'reservas', component: ReservasAdminComponent, canActivate: [adminGuard] },
+      { path: 'usuarios', component: UsuariosComponent, canActivate: [adminGuard] },
+      { path: 'ingresos', component: IngresosComponent, canActivate: [adminGuard] },
+      { path: 'configuracion', component: ConfiguracionComponent, canActivate: [adminGuard] },
     ],
   },
   { path: '**', redirectTo: 'home' },

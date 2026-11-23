@@ -1,0 +1,75 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Control de ingresos</h1>
+      <p>Registra la entrada o salida de cada persona con su código universitario.</p>
+    </div>
+  </div>
+
+  <form class="panel" (ngSubmit)="registrar('ENTRADA')">
+    <div class="campo">
+      <label for="cod">Código universitario</label>
+      <div class="barra">
+        <input id="cod" name="codigo" [(ngModel)]="codigo" (ngModelChange)="errorRegistro.set('')" autocomplete="off" />
+        <button class="btn" type="submit" [disabled]="!codigo.trim() || enviando()">Registrar entrada</button>
+        <button class="btn btn-sec" type="button" [disabled]="!codigo.trim() || enviando()" (click)="registrar('SALIDA')">Registrar salida</button>
+      </div>
+      @if (errorRegistro()) {
+        <span class="error-campo" role="alert">{{ errorRegistro() }}</span>
+      }
+    </div>
+  </form>
+
+  @if (cargando()) {
+    <p class="cargando">Cargando ingresos…</p>
+  } @else {
+    <div class="herramientas-tabla">
+      <input type="search" placeholder="Buscar por nombre o código…" [ngModel]="tabla.filtro()" (ngModelChange)="tabla.filtro.set($event)" name="filtro" />
+      <div class="botones">
+        <button type="button" class="btn btn-sec btn-chico" (click)="tabla.abrirTodos(visibles())">Expandir todo</button>
+        <button type="button" class="btn btn-sec btn-chico" (click)="tabla.cerrarTodos()">Contraer todo</button>
+      </div>
+    </div>
+
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th></th><th>Nombre</th><th>Carrera profesional</th><th>Fecha y hora</th><th>Movimiento</th></tr></thead>
+        <tbody>
+          @for (g of visibles(); track g.clave) {
+            <tr class="fila-grupo" [class.abierta]="tabla.estaAbierto(g.clave)" (click)="tabla.alternar(g.clave)">
+              <td class="col-flecha">
+                <button type="button" class="flecha" [class.abierta]="tabla.estaAbierto(g.clave)"
+                        [attr.aria-expanded]="tabla.estaAbierto(g.clave)" aria-label="Ver registros"
+                        (click)="$event.stopPropagation(); tabla.alternar(g.clave)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </td>
+              <td class="grupo-nombre">{{ g.titulo }} <small class="num">{{ g.subtitulo }}</small></td>
+              <td>{{ ultimo(g).escuela || '—' }}</td>
+              <td class="num">Último: {{ fechaHora(ultimo(g).fechaHora) }}</td>
+              <td>
+                <div class="grupo-sellos">
+                  @if (estaDentro(g)) { <span class="sello sello-ok">Dentro</span> } @else { <span class="sello sello-neutro">Fuera</span> }
+                  <span class="sello sello-info">{{ entradas(g) }} {{ entradas(g) === 1 ? 'entrada' : 'entradas' }}</span>
+                </div>
+              </td>
+            </tr>
+            @if (tabla.estaAbierto(g.clave)) {
+              @for (i of g.items; track i.idIngreso; let n = $index; let ultima = $last) {
+                <tr class="fila-detalle" [class.ultima]="ultima">
+                  <td></td>
+                  <td class="sangria">Registro {{ g.items.length - n }}</td>
+                  <td></td>
+                  <td class="num">{{ fechaHora(i.fechaHora) }}</td>
+                  <td><span class="sello" [class.sello-ok]="i.tipoAcceso === 'ENTRADA'" [class.sello-neutro]="i.tipoAcceso === 'SALIDA'">{{ i.tipoAcceso === 'ENTRADA' ? 'Entrada' : 'Salida' }}</span></td>
+                </tr>
+              }
+            }
+          } @empty {
+            <tr><td colspan="5" class="vacio">{{ tabla.filtro() ? 'Nadie coincide con la búsqueda.' : 'Aún no hay ingresos registrados.' }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

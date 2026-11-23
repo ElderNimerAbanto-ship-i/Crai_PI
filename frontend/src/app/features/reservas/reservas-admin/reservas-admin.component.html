@@ -1,0 +1,75 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Reservas de sala</h1>
+      <p>Historial de reservas. Los estudiantes reservan desde la página pública; aquí puedes cancelarlas.</p>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <p class="cargando">Cargando reservas…</p>
+  } @else {
+    <div class="herramientas-tabla">
+      <input type="search" placeholder="Buscar por responsable o código…" [ngModel]="tabla.filtro()" (ngModelChange)="tabla.filtro.set($event)" />
+      <div class="botones">
+        <button type="button" class="btn btn-sec btn-chico" (click)="tabla.abrirTodos(visibles())">Expandir todo</button>
+        <button type="button" class="btn btn-sec btn-chico" (click)="tabla.cerrarTodos()">Contraer todo</button>
+      </div>
+    </div>
+
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th></th><th>Responsable / N.º</th><th>Sala</th><th>Fecha</th><th>Horario</th><th>Personas</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          @for (g of visibles(); track g.clave) {
+            <!-- Fila resumen del responsable -->
+            <tr class="fila-grupo" [class.abierta]="tabla.estaAbierto(g.clave)" (click)="tabla.alternar(g.clave)">
+              <td class="col-flecha">
+                <button type="button" class="flecha" [class.abierta]="tabla.estaAbierto(g.clave)"
+                        [attr.aria-expanded]="tabla.estaAbierto(g.clave)" aria-label="Ver reservas"
+                        (click)="$event.stopPropagation(); tabla.alternar(g.clave)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </td>
+              <td class="grupo-nombre">{{ g.titulo }} <small class="num">{{ g.subtitulo }}</small></td>
+              <td>{{ g.items.length }} {{ g.items.length === 1 ? 'reserva' : 'reservas' }}</td>
+              <td class="num">Última: {{ fecha(g.items[0].fechaReserva) }}</td>
+              <td></td>
+              <td></td>
+              <td>
+                <div class="grupo-sellos">
+                  @if (activas(g)) { <span class="sello sello-ok">{{ activas(g) }} {{ activas(g) === 1 ? 'activa' : 'activas' }}</span> }
+                  @if (canceladas(g)) { <span class="sello sello-neutro">{{ canceladas(g) }} {{ canceladas(g) === 1 ? 'cancelada' : 'canceladas' }}</span> }
+                </div>
+              </td>
+              <td></td>
+            </tr>
+
+            <!-- Detalle: cada reserva -->
+            @if (tabla.estaAbierto(g.clave)) {
+              @for (r of g.items; track r.idReservaSala; let ultima = $last) {
+                <tr class="fila-detalle" [class.ultima]="ultima">
+                  <td></td>
+                  <td class="sangria num">Reserva N.º {{ r.idReservaSala }}</td>
+                  <td>{{ r.nombreSala }}</td>
+                  <td class="num">{{ fecha(r.fechaReserva) }}</td>
+                  <td class="num">{{ hora(r.horaInicio) }} a {{ hora(r.horaFin) }}</td>
+                  <td class="num">{{ r.totalIntegrantes }}</td>
+                  <td>
+                    @if (r.estado === 'A') { <span class="sello sello-ok">Activa</span> } @else { <span class="sello sello-neutro">Cancelada</span> }
+                  </td>
+                  <td class="acciones">
+                    @if (r.estado === 'A') { <button class="btn btn-sec btn-chico" type="button" (click)="cancelar(r)">Cancelar</button> }
+                    <button class="btn btn-peligro btn-chico" type="button" (click)="eliminar(r)">Eliminar</button>
+                  </td>
+                </tr>
+              }
+            }
+          } @empty {
+            <tr><td colspan="8" class="vacio">{{ tabla.filtro() ? 'Nadie coincide con la búsqueda.' : 'Todavía no hay reservas.' }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

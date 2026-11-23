@@ -1,0 +1,75 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Usuarios</h1>
+      <p>Solo los estudiantes con acceso habilitado pueden reservar salas y recibir préstamos.</p>
+    </div>
+    <button class="btn" type="button" (click)="mostrarForm.set(!mostrarForm())">{{ mostrarForm() ? 'Cerrar formulario' : 'Registrar usuario' }}</button>
+  </div>
+
+  @if (mostrarForm()) {
+    <form class="panel" [formGroup]="form" (ngSubmit)="registrar()">
+      <h2>Nuevo usuario</h2>
+      <div class="form-rejilla">
+        <div class="campo"><label for="n">Nombres</label><input id="n" formControlName="nombres" /></div>
+        <div class="campo"><label for="a">Apellidos</label><input id="a" formControlName="apellidos" /></div>
+        <div class="campo">
+          <label for="e">Correo</label><input id="e" type="email" formControlName="email" />
+          @if (form.controls.email.touched && form.controls.email.invalid) { <span class="error-campo">Escribe un correo válido.</span> }
+        </div>
+        <div class="campo"><label for="c">Código universitario</label><input id="c" formControlName="codigoUni" /></div>
+        <div class="campo">
+          <label for="u">Usuario</label><input id="u" formControlName="username" />
+          @if (form.controls.username.touched && form.controls.username.invalid) { <span class="error-campo">Entre 4 y 20 caracteres.</span> }
+        </div>
+        <div class="campo">
+         <label for="p">Contraseña</label><input id="p" type="password" formControlName="password" autocomplete="new-password" />
+           @if (form.controls.password.touched && form.controls.password.invalid) { 
+            <span class="error-campo">Mínimo 6 caracteres.</span> 
+          }
+        </div>
+        <div class="campo">
+          <label for="r">Rol</label>
+          <select id="r" formControlName="rol">@for (r of roles; track r) { <option [value]="r">{{ r }}</option> }</select>
+        </div>
+        <div class="campo">
+          <label for="es">Escuela profesional</label>
+          <select id="es" formControlName="idEscuelaProf">
+            <option [value]="0">Sin escuela</option>
+            @for (e of escuelas(); track e.idEscuelaProf) { <option [value]="e.idEscuelaProf">{{ e.nombreEsc }}</option> }
+          </select>
+        </div>
+      </div>
+      <div class="form-acciones derecha"><button class="btn" type="submit">Registrar usuario</button></div>
+    </form>
+  }
+
+  @if (cargando()) {
+    <p class="cargando">Cargando usuarios…</p>
+  } @else {
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Escuela</th><th>Acceso</th><th></th></tr></thead>
+        <tbody>
+          @for (u of lista(); track u.idPersona) {
+            <tr>
+              <td class="num">{{ u.codigoUni }}</td>
+              <td>{{ u.nombrePersona }}<br /><span class="muted correo">{{ u.email }}</span></td>
+              <td>{{ u.username }}</td>
+              <td><span class="sello sello-info">{{ u.rol }}</span></td>
+              <td>{{ u.nombreEscuela || '—' }}</td>
+              <td>@if (u.accesoHabilitado) { <span class="sello sello-ok">Habilitado</span> } @else { <span class="sello sello-error">Deshabilitado</span> }</td>
+              <td class="acciones">
+                <button class="btn btn-chico" [class.btn-peligro]="u.accesoHabilitado" [class.btn-sec]="!u.accesoHabilitado" type="button" (click)="alternarAcceso(u)">
+                  {{ u.accesoHabilitado ? 'Deshabilitar' : 'Habilitar' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="vacio">Todavía no hay usuarios registrados.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
