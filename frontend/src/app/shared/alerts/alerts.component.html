@@ -1,0 +1,8 @@
+<div class="pila" aria-live="polite">
+  @for (a of alertas.alertas(); track a.id) {
+    <div class="aviso" [class.ok]="a.tipo === 'ok'" [class.error]="a.tipo === 'error'" [class.info]="a.tipo === 'info'" [attr.role]="a.tipo === 'error' ? 'alert' : 'status'">
+      <span>{{ a.texto }}</span>
+      <button type="button" (click)="alertas.cerrar(a.id)" aria-label="Cerrar aviso">×</button>
+    </div>
+  }
+</div>

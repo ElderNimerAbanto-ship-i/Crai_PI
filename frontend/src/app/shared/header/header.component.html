@@ -1,0 +1,76 @@
+<header class="cabecera">
+  <div class="contenedor fila">
+    <a routerLink="/home" class="marca" (click)="cerrar()">
+      <span class="marca-sello" aria-hidden="true">C</span>
+      <span class="marca-texto">
+        CRAI
+        <small>UPeU</small>
+      </span>
+    </a>
+
+    <button
+      class="burger"
+      type="button"
+      (click)="alternar()"
+      [attr.aria-expanded]="menuAbierto()"
+      aria-controls="nav-principal"
+    >
+      <i class="bi bi-list"></i>
+      <span>Menú</span>
+    </button>
+
+    <nav
+      id="nav-principal"
+      class="nav-principal"
+      [class.abierto]="menuAbierto()"
+      aria-label="Principal"
+    >
+      <div class="nav-enlaces">
+        @for (e of enlaces(); track e.ruta) {
+          <a
+            [routerLink]="e.ruta"
+            routerLinkActive="activo"
+            class="nav-item"
+            (click)="cerrar()"
+          >
+            {{ e.texto }}
+          </a>
+        }
+      </div>
+
+      <div class="nav-acciones">
+        <a routerLink="/reservar" class="btn-crai reservar" (click)="cerrar()">
+          <i class="bi bi-calendar2-check"></i>
+          <span>Reservar sala</span>
+        </a>
+
+        @if (auth.usuario(); as u) {
+          <div class="sesion-box">
+            <span class="sesion">
+              <i class="bi bi-person-circle"></i>
+              <span class="sesion-meta">
+                <span class="sesion-nombre">{{ u.username }}</span>
+                <small class="sesion-rol">{{ u.rol }}</small>
+              </span>
+            </span>
+
+            <button
+              class="btn-crai salir"
+              type="button"
+              (click)="salir()"
+              title="Cerrar sesión"
+            >
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Salir</span>
+            </button>
+          </div>
+        } @else {
+          <a routerLink="/login" class="btn-crai ingresar" (click)="cerrar()">
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Ingresar</span>
+          </a>
+        }
+      </div>
+    </nav>
+  </div>
+</header>
