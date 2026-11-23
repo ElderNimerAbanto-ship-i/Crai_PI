@@ -1,0 +1,207 @@
+<div class="lienzo">
+
+  <!-- Portada: banda azul institucional + tarjeta de título -->
+  <header class="portada reveal" style="--n:0">
+    <div class="banner">
+      <button type="button" class="actualizar" (click)="recargar()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7 M21 4v5h-5"/></svg>
+        Actualizar
+      </button>
+    </div>
+    <div class="perfil">
+      <span class="avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z M20 17v4H6.5A2.5 2.5 0 0 1 4 18.5"/></svg>
+      </span>
+      <div class="titulos">
+        <h1>Dashboard</h1>
+        <p class="sub">Qué carreras usan el CRAI, cuándo se llenan las salas y cuántos libros se prestan.</p>
+        <p class="meta">
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>Universidad Peruana Unión</span>
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Atención de 08:00 a 21 :00</span>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cifras de hoy -->
+  <section class="cifras" aria-label="Cifras de hoy">
+    @if (resumen(); as r) {
+      <article class="stat reveal" style="--n:1">
+        <div class="stat-cab"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4 M10 17l5-5-5-5 M15 12H3"/></svg></span><span>Ingresos hoy</span></div>
+        <p class="valor num">{{ r.ingresosHoy }}</p>
+        <p class="nota">Entradas de estudiantes y docentes</p>
+      </article>
+      <article class="stat reveal" style="--n:2">
+        <div class="stat-cab"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3 4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"/></svg></span><span>Préstamos activos</span></div>
+        <p class="valor num">{{ r.prestamosActivos }}</p>
+        <p class="nota">Libros fuera del CRAI</p>
+      </article>
+      <article class="stat reveal" style="--n:3" [class.alerta]="r.prestamosVencidos > 0">
+        <div class="stat-cab"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></span><span>Préstamos vencidos</span></div>
+        <p class="valor num">{{ r.prestamosVencidos }}</p>
+        <p class="nota">{{ r.prestamosVencidos > 0 ? 'Requieren seguimiento' : 'Todo al día' }}</p>
+      </article>
+      <article class="stat reveal" style="--n:4">
+        <div class="stat-cab"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M16 2v4 M8 2v4 M3 10h18"/></svg></span><span>Reservas de sala hoy</span></div>
+        <p class="valor num">{{ r.reservasHoy }}</p>
+        <p class="nota">Reservas activas</p>
+      </article>
+      <article class="stat reveal" style="--n:5">
+        <div class="stat-cab"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5z M2 17l10 5 10-5 M2 12l10 5 10-5"/></svg></span><span>Ejemplares disponibles</span></div>
+        <p class="valor num">{{ r.ejemplaresDisponibles }}<small> de {{ r.totalEjemplares }}</small></p>
+        <span class="medidor" aria-hidden="true"><span [style.width.%]="pctEjemplares()"></span></span>
+      </article>
+    } @else {
+      @for (n of [1, 2, 3, 4, 5]; track n) { <div class="stat esq" aria-hidden="true"></div> }
+    }
+  </section>
+
+  <!-- Filtro de fechas -->
+  <div class="filtros reveal" style="--n:2" role="group" aria-label="Periodo de análisis">
+    <div class="pildoras">
+      @for (p of periodos; track p.valor) {
+        <button type="button" [class.sel]="periodo() === p.valor" [attr.aria-pressed]="periodo() === p.valor" (click)="aplicarPeriodo(p.valor)">{{ p.texto }}</button>
+      }
+    </div>
+    <div class="fechas">
+      <label for="desde">Desde</label>
+      <input id="desde" type="date" [ngModel]="desde()" (ngModelChange)="desde.set($event); periodo.set('personalizado'); alCambiarFechas()" />
+      <label for="hasta">Hasta</label>
+      <input id="hasta" type="date" [ngModel]="hasta()" (ngModelChange)="hasta.set($event); periodo.set('personalizado'); alCambiarFechas()" />
+    </div>
+    @if (rangoInvalido()) { <span class="error-campo">La fecha inicial debe ser anterior a la final.</span> }
+  </div>
+
+  @if (error()) {
+    <div class="aviso-error reveal">No se pudieron cargar algunos datos. Revisa que el backend esté encendido.</div>
+  }
+
+  <div class="rejilla">
+
+    <!-- 1. Carrera -->
+    <section class="tarjeta ancha reveal" style="--n:3">
+      <div class="titulo-grafico">
+        <div>
+          <h2>Carreras que más usan el CRAI</h2>
+          <p class="ayuda">Los ingresos cuentan solo entradas. No incluye administradores (mismo criterio que "Ingresos hoy": con el filtro <strong>Hoy</strong> la suma de todas las carreras es igual a esa cifra). "Sin escuela" agrupa a quienes no tienen escuela asignada.</p>        </div>
+        <div class="pildoras pequenas" role="group" aria-label="Medir por">
+          @for (m of metricas; track m.valor) {
+            <button type="button" [class.sel]="metrica() === m.valor" [attr.aria-pressed]="metrica() === m.valor" (click)="metrica.set(m.valor)">{{ m.texto }}</button>
+          }
+        </div>
+      </div>
+      @if (escuelas() === null) {
+        <div class="esq-lista" aria-hidden="true"><span class="esq"></span><span class="esq"></span><span class="esq"></span></div>
+      } @else if (filasEscuela().length === 0) {
+        <p class="vacio-grafico">No hay datos en este periodo.</p>
+      } @else {
+        <ol class="barras">
+          @for (f of filasEscuela(); track f.nombre; let i = $index) {
+            <li [style.--n]="i">
+              <span class="nombre" [class.tenue]="f.sinEscuela">{{ f.nombre }}</span>
+              <span class="pista"><span class="relleno" [class.tenue]="f.sinEscuela" [style.width.%]="f.pct"></span></span>
+              <span class="valor-barra num">{{ f.valor }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+
+    <!-- 2. Salas -->
+    <section class="tarjeta reveal" style="--n:4">
+      <div class="titulo-grafico">
+        <div>
+          <h2>Uso de las salas</h2>
+          <p class="ayuda">Se mide por reservas, no por ocupación real: el sistema no registra si el grupo llegó. No incluye reservas canceladas.</p>
+        </div>
+      </div>
+      @if (salas() === null) {
+        <div class="esq-lista" aria-hidden="true"><span class="esq"></span><span class="esq"></span><span class="esq"></span></div>
+      } @else if (filasSala().length === 0) {
+        <p class="vacio-grafico">No hay salas registradas.</p>
+      } @else {
+        <ul class="salas">
+          @for (s of filasSala(); track s.idSala; let i = $index) {
+            <li [style.--n]="i">
+              <span class="chip c{{ i % 4 }}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18 M5 20V8l7-5 7 5v12 M10 20v-6h4v6"/></svg></span>
+              <div class="sala-dato">
+                <div class="sala-fila"><span class="sala-nombre">{{ s.sala }}</span><span class="sala-cifra num">{{ s.reservas }} <small>{{ s.reservas === 1 ? 'reserva' : 'reservas' }} · {{ s.horas }} h</small></span></div>
+                <span class="pista fina"><span class="relleno" [class.oro]="i === 0" [style.width.%]="s.pct"></span></span>
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="total-sala"><strong class="num">{{ totalReservasSalas() }}</strong><span>reservas en el periodo</span></p>
+      }
+    </section>
+
+    <!-- Mapa de calor -->
+    <section class="tarjeta ancha reveal" style="--n:5">
+      <div class="titulo-grafico">
+        <div>
+          <h2>Horas más concurridas</h2>
+          <p class="ayuda">Reservas por día de la semana y hora: cada reserva cuenta en todas las horas que cubre.</p>
+        </div>
+        @if (horaPico(); as pico) {
+          <p class="pico-chip">Hora pico: <strong>{{ pico.dia }} {{ pico.desde }}–{{ pico.hasta }}</strong> · {{ pico.reservas }} {{ pico.reservas === 1 ? 'reserva' : 'reservas' }}</p>
+        }
+      </div>
+      @if (horarios() === null) {
+        <div class="esq-lista" aria-hidden="true"><span class="esq"></span><span class="esq"></span></div>
+      } @else if (!horaPico()) {
+        <p class="vacio-grafico">No hay reservas en este periodo.</p>
+      } @else {
+        <div class="mapa-wrap">
+          <table class="mapa" aria-label="Reservas por día de la semana y hora">
+            <thead>
+              <tr><th></th>@for (d of dias; track d) { <th scope="col">{{ d }}</th> }</tr>
+            </thead>
+            <tbody>
+              @for (fila of mapa(); track fila.hora) {
+                <tr>
+                  <th scope="row" class="num">{{ fila.hora < 10 ? '0' + fila.hora : fila.hora }}:00</th>
+                  @for (c of fila.celdas; track $index) {
+                    <td
+                      [style.--i]="c.intensidad"
+                      [class.fuerte]="c.intensidad > 0.55"
+                      [class.cero]="c.valor === 0"
+                      [attr.aria-label]="c.dia + ' ' + fila.hora + ':00, ' + c.valor + ' reservas'"
+                      [title]="c.dia + ' ' + fila.hora + ':00 · ' + c.valor + ' reservas'"
+                    >{{ c.valor || '' }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <!-- 3. Préstamos por mes -->
+    <section class="tarjeta reveal" style="--n:6">
+      <div class="titulo-grafico">
+        <div>
+          <h2>Libros prestados por mes</h2>
+          <p class="ayuda">Últimos 12 meses, sin importar el periodo elegido arriba. Un préstamo con dos libros suma dos.</p>
+        </div>
+        @if (meses() !== null) { <p class="total num"><strong>{{ totalPrestados() }}</strong><span>en 12 meses</span></p> }
+      </div>
+      @if (meses() === null) {
+        <div class="esq-lista" aria-hidden="true"><span class="esq alto"></span></div>
+      } @else {
+        <div class="columnas" role="group" [attr.aria-label]="'Libros prestados por mes, total ' + totalPrestados()">
+          @for (c of columnas(); track c.etiqueta; let i = $index) {
+            <button type="button" class="columna" [class.sel]="i === mesActivo()" [style.--n]="i"
+              [attr.aria-label]="c.etiqueta + ': ' + c.libros + ' libros'"
+              (click)="mesSel.set(i)" (mouseenter)="mesSel.set(i)" (focus)="mesSel.set(i)">
+              <span class="chip-valor num">{{ c.libros }}</span>
+              <span class="pila"><span class="barra-v" [style.height.%]="c.pct"></span></span>
+              <span class="mes">{{ c.corta }}<small>{{ c.anio }}</small></span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</div>

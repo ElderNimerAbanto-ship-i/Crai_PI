@@ -1,6 +1,7 @@
 import { ApplicationConfig, ErrorHandler, inject, provideZoneChangeDetection } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideRouter, withInMemoryScrolling, withNavigationErrorHandler } from '@angular/router';
+//agregue el withhashlocation
+import { provideRouter, withHashLocation, withInMemoryScrolling, withNavigationErrorHandler } from '@angular/router';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { routes } from './app.routes';
 import { GlobalErrorHandler } from './core/global-error.handler';
@@ -12,6 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       routes,
+      withHashLocation(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
       withNavigationErrorHandler((e) => {
         console.error('Error de navegación', e.error);

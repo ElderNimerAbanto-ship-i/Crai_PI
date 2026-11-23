@@ -1,0 +1,50 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>{{ id ? 'Editar libro' : 'Agregar libro' }}</h1>
+      <p>La portada es opcional. Si no subes una, se genera una con el título.</p>
+    </div>
+  </div>
+
+  <form class="panel formulario" [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="columnas">
+      <div class="campos">
+        <div class="campo">
+          <label for="titulo">Título</label>
+          <input id="titulo" formControlName="titulo" />
+          @if (form.controls.titulo.touched && form.controls.titulo.invalid) { <span class="error-campo">Escribe el título.</span> }
+        </div>
+        <div class="campo">
+          <label for="autor">Autor</label>
+          <input id="autor" formControlName="autor" />
+          @if (form.controls.autor.touched && form.controls.autor.invalid) { <span class="error-campo">Escribe el autor.</span> }
+        </div>
+        <div class="campo">
+          <label for="cat">Categoría</label>
+          <select id="cat" formControlName="idCategoria">
+            <option [value]="0" disabled>Elige una categoría</option>
+            @for (c of categorias(); track c.idCategoria) { <option [value]="c.idCategoria">{{ c.nombre }}</option> }
+          </select>
+          @if (form.controls.idCategoria.touched && form.controls.idCategoria.invalid) { <span class="error-campo">Elige una categoría.</span> }
+          @if (categorias().length === 0) { <span class="ayuda">No hay categorías. Créalas primero en Configuración.</span> }
+        </div>
+        <div class="campo">
+          <label for="sec">Sección especial (opcional)</label>
+          <input id="sec" formControlName="seccionEspecial" placeholder="Ejemplo: Tesis, Referencia" />
+        </div>
+        <div class="campo">
+          <label for="file">Portada (máximo 1 MB)</label>
+          <input id="file" type="file" accept="image/*" (change)="alElegirArchivo($event)" />
+        </div>
+      </div>
+      <div class="previa">
+        <span class="etiqueta">Así se verá</span>
+        <app-book-cover [titulo]="form.controls.titulo.value || 'Título del libro'" [autor]="form.controls.autor.value" [imagen]="vistaPrevia()" />
+      </div>
+    </div>
+    <div class="form-acciones">
+      <button class="btn" type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar libro' }}</button>
+      <a routerLink="/libros" class="btn btn-sec">Cancelar</a>
+    </div>
+  </form>
+</section>

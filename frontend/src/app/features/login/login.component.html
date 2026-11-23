@@ -1,0 +1,43 @@
+<div class="login-fondo">
+  <form class="login-tarjeta" [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+    <a routerLink="/home" class="login-marca">
+      <span class="login-sello" aria-hidden="true">C</span>
+      <span>CRAI <small>UPeU</small></span>
+    </a>
+
+    <h1>Iniciar sesión</h1>
+    <p class="muted">Ingresa con tu usuario y contraseña.</p>
+
+    @if (error()) {
+      <div class="login-error" role="alert">{{ error() }}</div>
+    }
+
+    <div class="campo">
+      <label for="login-user">Usuario</label>
+      <input id="login-user" formControlName="username" autocomplete="username" autofocus />
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <span class="error-campo">El usuario es obligatorio.</span>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="login-pass">Contraseña</label>
+      <div class="login-pass">
+        <input id="login-pass" [type]="verPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+        <button type="button" class="login-ojo" (click)="verPassword.set(!verPassword())"
+                [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+          <i class="bi" [class.bi-eye]="!verPassword()" [class.bi-eye-slash]="verPassword()"></i>
+        </button>
+      </div>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <span class="error-campo">La contraseña es obligatoria.</span>
+      }
+    </div>
+
+    <button class="btn login-btn" type="submit" [disabled]="cargando()">
+      @if (cargando()) { <span class="spinner-border spinner-border-sm"></span> Ingresando... } @else { Ingresar }
+    </button>
+
+    <a routerLink="/home" class="login-volver">← Volver al inicio</a>
+  </form>
+</div>

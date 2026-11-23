@@ -4,9 +4,18 @@
     "secure": false,
     "logLevel": "debug"
   },
+  "/crai/api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "logLevel": "debug"
+  }
+  
+  ,
   "/crai/images": {
     "target": "http://localhost:8082",
     "secure": false,
     "logLevel": "debug"
   }
 }
+
+

@@ -1,0 +1,16 @@
+.columnas { 
+    display: grid; 
+    gap: 28px; 
+    grid-template-columns: 1fr 180px; 
+    align-items: start; 
+}
+
+.campos { 
+    display: grid; 
+    gap: 14px; 
+}
+.previa { 
+    display: grid; 
+    gap: 8px; 
+}
+@media (max-width: 640px) { .columnas { grid-template-columns: 1fr; } .previa { max-width: 180px; } }

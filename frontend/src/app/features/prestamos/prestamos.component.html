@@ -1,0 +1,138 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Préstamos</h1>
+      <p>Cada usuario puede tener hasta 3 préstamos activos y ninguno vencido.</p>
+    </div>
+  </div>
+
+  <form class="panel" [formGroup]="form" (ngSubmit)="registrar()">
+    <h2>Registrar préstamo</h2>
+    <div class="form-rejilla">
+      <div class="campo">
+        <label for="cod">Código universitario</label>
+        <input id="cod" formControlName="codigoUni" autocomplete="off" />
+      </div>
+      <div class="campo buscador">
+        <label for="ej">Ejemplar (buscar por código, título)</label>
+        @if (ejemplarSel(); as sel) {
+          <div class="elegido">
+            <span>N.º {{ sel.idEjemplar }} · {{ sel.tituloLibro }}@if (sel.isbn) { <span class="muted"> · {{ sel.isbn }}</span> }</span>
+            <button type="button" class="btn btn-sec btn-chico" (click)="quitarEjemplar()">Cambiar</button>
+          </div>
+        } @else {
+          <input
+            id="ej"
+            type="search"
+            autocomplete="off"
+            placeholder="Ejemplo: 25 o FT112598"
+            [value]="busqueda()"
+            (input)="alBuscar($any($event.target).value)"
+            (keydown.enter)="$event.preventDefault(); elegirPrimero()"
+          />
+          @if (resultados().length) {
+            <ul class="resultados">
+              @for (e of resultados(); track e.idEjemplar) {
+                <li>
+                  <button type="button" (click)="elegirEjemplar(e)">
+                    <strong class="num">N.º {{ e.idEjemplar }}</strong>
+                    <span>{{ e.tituloLibro }}</span>
+                    <span class="muted num">{{ e.isbn }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else if (busqueda().trim()) {
+            <span class="error-campo">No hay ejemplares disponibles con ese código.</span>
+          } @else if (disponibles().length === 0) {
+            <span class="ayuda">No hay ejemplares disponibles.</span>
+          }
+        }
+      </div>
+      <div class="campo">
+        <label for="dias">Días de préstamo (1 a 3)</label>
+        <input id="dias" type="number" min="1" max="3" formControlName="dias" />
+      </div>
+    </div>
+    <div class="form-acciones derecha"><button class="btn" type="submit">Registrar préstamo</button></div>
+  </form>
+
+    <div class="herramientas-tabla">
+    <input type="search" placeholder="Buscar por nombre…" [ngModel]="tabla.filtro()" (ngModelChange)="tabla.filtro.set($event)" />
+    <div class="botones">
+      <button type="button" class="btn btn-chico" [class.btn-sec]="soloVencidos()" (click)="filtrar(false)">Todos</button>
+      <button type="button" class="btn btn-chico" [class.btn-sec]="!soloVencidos()" (click)="filtrar(true)">Solo vencidos</button>
+      <button type="button" class="btn btn-sec btn-chico" (click)="tabla.abrirTodos(visibles())">Expandir todo</button>
+      <button type="button" class="btn btn-sec btn-chico" (click)="tabla.cerrarTodos()">Contraer todo</button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <p class="cargando">Cargando préstamos…</p>
+  } @else {
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th></th><th>Usuario / N.º</th><th>Prestado</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          @for (g of visibles(); track g.clave) {
+            <!-- Fila resumen de la persona -->
+            <tr class="fila-grupo" [class.abierta]="tabla.estaAbierto(g.clave)" (click)="tabla.alternar(g.clave)">
+              <td class="col-flecha">
+                <button type="button" class="flecha" [class.abierta]="tabla.estaAbierto(g.clave)"
+                        [attr.aria-expanded]="tabla.estaAbierto(g.clave)" aria-label="Ver préstamos"
+                        (click)="$event.stopPropagation(); tabla.alternar(g.clave)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </td>
+              <td class="grupo-nombre">{{ g.titulo }} <small>{{ g.items.length }} {{ g.items.length === 1 ? 'préstamo' : 'préstamos' }}</small></td>
+              <td class="num">Último: {{ fecha(g.items[0].fechaPrestamo) }}</td>
+              <td class="num">{{ proximoVencimiento(g) ? 'Próximo: ' + fecha(proximoVencimiento(g)) : '—' }}</td>
+              <td>
+                <div class="grupo-sellos">
+                  @if (activos(g)) { <span class="sello sello-ok">{{ activos(g) }} {{ activos(g) === 1 ? 'activo' : 'activos' }}</span> }
+                  @if (vencidos(g)) { <span class="sello sello-error">{{ vencidos(g) }} {{ vencidos(g) === 1 ? 'vencido' : 'vencidos' }}</span> }
+                  @if (devueltos(g)) { <span class="sello sello-neutro">{{ devueltos(g) }} {{ devueltos(g) === 1 ? 'devuelto' : 'devueltos' }}</span> }
+                </div>
+              </td>
+              <td></td>
+            </tr>
+
+            <!-- Detalle: cada préstamo de la persona -->
+            @if (tabla.estaAbierto(g.clave)) {
+              @for (p of g.items; track p.idPrestamo; let ultima = $last) {
+                <tr class="fila-detalle" [class.ultima]="ultima && !detalles()[p.idPrestamo]">
+                  <td></td>
+                  <td class="sangria num">Préstamo N.º {{ p.idPrestamo }}</td>
+                  <td class="num">{{ fecha(p.fechaPrestamo) }}</td>
+                  <td class="num">{{ fecha(p.fechaVencimiento) }}</td>
+                  <td>
+                    @if (p.estado === 'D') { <span class="sello sello-neutro">Devuelto {{ fecha(p.fechaDevolucion) }}</span> }
+                    @else if (estaVencido(p.fechaVencimiento, p.estado)) { <span class="sello sello-error">Vencido</span> }
+                    @else { <span class="sello sello-ok">Activo</span> }
+                  </td>
+                  <td class="acciones">
+                    <button class="btn btn-sec btn-chico" type="button" (click)="verDetalle(p)">Libro</button>
+                    @if (p.estado === 'A') {
+                      <button class="btn btn-sec btn-chico" type="button" (click)="renovar(p)">Renovar 3 días</button>
+                      <button class="btn btn-chico" type="button" (click)="devolver(p)">Devolver</button>
+                    }
+                  </td>
+                </tr>
+                @if (detalles()[p.idPrestamo]; as d) {
+                  <tr class="fila-detalle detalle" [class.ultima]="ultima"><td></td><td colspan="5" class="sangria">
+                    @for (x of d; track x.idDetalle) { <span>Ejemplar {{ x.idEjemplar }}: <strong>{{ x.tituloLibro }}</strong></span> }
+                  </td></tr>
+                }
+              }
+            }
+          } @empty {
+            <tr><td colspan="6" class="vacio">
+              @if (tabla.filtro()) { Nadie coincide con la búsqueda. }
+              @else { {{ soloVencidos() ? 'No hay préstamos vencidos.' : 'Todavía no hay préstamos.' }} }
+            </td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
