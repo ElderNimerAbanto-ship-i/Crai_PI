@@ -66,7 +66,7 @@ public class ReporteServiceImpl implements IReporteService {
                 prestamoRepository.countByEstadoAndFechaVencimientoBefore("A", LocalDateTime.now()),
                 reservaSalaRepository.countByFechaReservaAndEstado(hoy, "A"),
                 // solo entradas: cada visita genera una ENTRADA y una SALIDA
-                controlIngresoRepository.countByTipoAccesoAndFechaHoraBetween("ENTRADA", inicioDia, inicioDia.plusDays(1))
+                controlIngresoRepository.contarEntradas(inicioDia, inicioDia.plusDays(1), Rol.ADMIN)
         );
     }
 

@@ -38,17 +38,19 @@ public class ControlIngresoServiceImpl implements IControlIngresoService {
             throw new BusinessRuleException("Acceso denegado: el usuario no tiene acceso habilitado");
         }
 
-        // Una SALIDA solo tiene sentido si hoy hubo una ENTRADA. Esta regla NO la cubre el trigger
-        // (el trigger solo impide repetir el mismo tipo dos veces seguidas), por eso se valida aqui.
-        if ("SALIDA".equals(dto.tipoAcceso())) {
-            boolean estaDentro = controlIngresoRepository
-                    .findTopByUsuarioIdPersonaOrderByFechaHoraDesc(u.getIdPersona())
-                    .filter(c -> c.getFechaHora().toLocalDate().equals(LocalDate.now()))
-                    .map(c -> "ENTRADA".equals(c.getTipoAcceso()))
-                    .orElse(false);
-            if (!estaDentro) {
-                throw new BusinessRuleException("El usuario no tiene una entrada registrada hoy");
-            }
+        // Ultimo movimiento de HOY: si es ENTRADA, la persona esta dentro del CRAI
+        boolean estaDentro = controlIngresoRepository
+                .findTopByUsuarioIdPersonaOrderByFechaHoraDesc(u.getIdPersona())
+                .filter(c -> c.getFechaHora().toLocalDate().equals(LocalDate.now()))
+                .map(c -> "ENTRADA".equals(c.getTipoAcceso()))
+                .orElse(false);
+
+        // Se valida ANTES del INSERT para no depender del error ORA-20020 de trg_ingreso_alterna
+        if ("ENTRADA".equals(dto.tipoAcceso()) && estaDentro) {
+            throw new BusinessRuleException("El usuario ya se encuentra registrado");
+        }
+        if ("SALIDA".equals(dto.tipoAcceso()) && !estaDentro) {
+            throw new BusinessRuleException("El usuario no tiene una entrada registrada hoy");
         }
 
         ControlIngreso ingreso = new ControlIngreso();
@@ -56,8 +58,6 @@ public class ControlIngresoServiceImpl implements IControlIngresoService {
         ingreso.setTipoAcceso(dto.tipoAcceso());
         ingreso.setFechaHora(LocalDateTime.now());
 
-        // saveAndFlush fuerza el INSERT aqui: si trg_ingreso_alterna lanza ORA-20020 (dos ENTRADA o
-        // dos SALIDA seguidas), el error sale ahora y GlobalExceptionHandler lo convierte en un 409.
         return convertToDTO(controlIngresoRepository.saveAndFlush(ingreso));
     }
 
