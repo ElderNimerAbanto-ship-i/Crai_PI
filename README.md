@@ -1,36 +1,86 @@
-# Backend CRAI
+# Sistema Web de Gestión Integrada del CRAI — UPeU Tarapoto
 
-Este historial fue reconstruido a partir de la versión final del proyecto para la
-sustentación de LP. Los commits intermedios representan etapas funcionales
-inferidas por dependencias. Las fechas indican cuándo se hizo la reconstrucción.
-El equipo confirmó que Spring Security, BCrypt y JWT se integraron al final.
+Proyecto articulado de los cursos **Análisis y Diseño de Sistemas**, **Lenguaje de Programación** y **Administración de Base de Datos**. Gestiona el catálogo de libros, los préstamos, la reserva grupal de salas de estudio y el control de ingresos del CRAI.
 
-## Revisar el historial
+## Estructura
 
-```sh
-git log --reverse --oneline
-git show --stat HEAD
+```
+backend/    API REST · Spring Boot 3.4 · Java 21
+frontend/   SPA · Angular 18 · TypeScript
+docs/       Documento de análisis y diseño, guías y notas de despliegue
 ```
 
-## Ejecutar la versión final
+## Tecnologías
 
-Se requiere Java 21 y el entorno Oracle XE del proyecto. La aplicación escucha
-en el puerto 8082 y usa el prefijo /crai. Configura las siguientes variables en
-la terminal o en la configuración de ejecución del IDE antes de iniciar Spring.
+| Capa | Tecnología |
+| --- | --- |
+| Frontend | Angular 18, TypeScript, signals, interceptores y guards funcionales |
+| Backend | Spring Boot 3.4, Spring Security + JWT, Spring Data JPA, JdbcTemplate |
+| Base de datos | Oracle XE 21c: esquema `CRAI` (dueño) y usuario de aplicación `US_CRAI` (mínimo privilegio) |
+
+## Base de datos
+
+Los scripts están en `backend/src/main/resources/db/` y se ejecutan en este orden:
+
+1. `00_system_crear_usuarios.sql` — como SYSTEM: crea `CRAI` y `US_CRAI`.
+2. Crear las tablas desde las entidades JPA conectado como `CRAI` (una sola vez).
+3. `sp_registrar_prestamo.sql` — como CRAI.
+4. `01_usuario_aplicacion_us_crai.sql` — como CRAI: vista y permisos de `US_CRAI`.
+5. `02_datos_iniciales.sql` — como CRAI.
+6. `03_demo_minimo_privilegio.sql` — como US_CRAI: demostración de permisos.
+
+## Variables de entorno del backend
+
+Las credenciales no se guardan en el repositorio. Configúralas en la terminal o en la configuración de ejecución del IDE:
 
 | Variable | Valor |
-|---|---|
-| `CRAI_DB_PASSWORD` | Contraseña de la cuenta CRAI en Oracle |
-| `CRAI_JWT_SECRET` | Clave Base64 privada usada para firmar el JWT |
+| --- | --- |
+| `CRAI_DB_PASSWORD` | Contraseña de `US_CRAI` en Oracle |
+| `CRAI_JWT_SECRET` | Clave Base64 privada para firmar el JWT |
+| `CRAI_DB_URL` | Opcional. Por defecto `jdbc:oracle:thin:@localhost:1521/xe`; para Oracle en otra máquina, `jdbc:oracle:thin:@//IP:1521/xe` |
 
-Los valores locales están en la copia original del proyecto. Conserva la misma
-configuración para reproducir el entorno existente. En Windows puedes usar
-`mvnw.cmd` y en Linux o macOS puedes usar `./mvnw` para ejecutar
-`spring-boot:run`. El wrapper necesita acceso a Maven Central la primera vez.
+## Cómo ejecutarlo
 
-El procedimiento `src/main/resources/db/sp_registrar_prestamo.sql` se instala
-en Oracle. La vista de reportes y los triggers del entorno Oracle se conservan
-en la base de datos de la instalación original.
+**Modo desarrollo**
 
-Los commits anteriores al último se conservan para explicar la construcción
-del sistema. Usa la versión final para la demostración con JWT.
+```bash
+# backend/
+./mvnw spring-boot:run                       # http://localhost:8082/crai
+
+# frontend/
+npm install
+ng serve --proxy-config proxy.config.json    # http://localhost:4200
+```
+
+**Modo despliegue (un solo .jar)**
+
+```bash
+# frontend/
+ng build --base-href /crai/
+# copiar el contenido de frontend/dist/pcrai/browser/ a backend/src/main/resources/static/
+
+# backend/
+./mvnw clean package -Dmaven.test.skip=true
+java -jar target/crai-0.0.1-SNAPSHOT.jar     # http://IP:8082/crai/
+```
+
+Para exponerlo fuera de la red local: `cloudflared tunnel --url http://localhost:8082` y abrir la URL generada con `/crai/` al final.
+
+## Equipo
+
+| Integrante | Rama | Rol |
+| --- | --- | --- |
+| Nimer | `main` | Backend y base de datos · revisa y aprueba los Pull Requests |
+| Matthew | `dev_matthew` | Backend y base de datos |
+| Jhosmer | `dev_jhosmer` | Frontend y despliegue |
+| Steeward | `dev_steeward` | Frontend y documentación |
+
+## Forma de trabajo
+
+- `main` está protegida: nadie sube directamente.
+- Cada integrante trabaja en su rama `dev_<nombre>` y abre un **Pull Request** hacia `main`, que Nimer revisa y aprueba.
+- Mensajes de commit con prefijo: `feat:` funcionalidad, `fix:` corrección, `docs:` documentación, `chore:` configuración.
+
+## Historial
+
+Los primeros commits del backend (19/11/2026) fueron reconstruidos a partir de la versión final para mostrar las etapas de construcción del sistema. Desde la reorganización en `backend/` y `frontend/`, cada commit corresponde al integrante que hizo el cambio.

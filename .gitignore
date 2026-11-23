@@ -38,3 +38,19 @@ build/
 application-local.yaml
 /untitled/
 /.github/modernize/
+
+### Monorepo: backend/ y frontend/ ###
+# Build de Angular copiado al backend para el despliegue: se genera, no se versiona
+backend/src/main/resources/static/
+backend/*.zip
+backend/untitled/
+
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Sistema
+Thumbs.db
+desktop.ini
+~$*
