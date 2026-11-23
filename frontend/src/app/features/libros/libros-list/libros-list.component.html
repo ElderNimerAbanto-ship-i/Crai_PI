@@ -1,0 +1,45 @@
+<section class="pagina">
+  <div class="pagina-cabecera">
+    <div>
+      <h1>Catálogo de libros</h1>
+      <p>Busca por título, autor o categoría. Cada libro puede tener varios ejemplares físicos.</p>
+    </div>
+    <a routerLink="/libros/nuevo" class="btn">Agregar libro</a>
+  </div>
+  <!--
+  <div class="barra">
+    <input type="search" [(ngModel)]="buscar" (ngModelChange)="alEscribir()" placeholder="Buscar libro" aria-label="Buscar libro" />
+  </div>
+-->
+  @if (cargando()) {
+    <p class="cargando">Cargando libros…</p>
+  } @else if (lista().length === 0) {
+    <div class="panel vacio">
+      @if (buscar) { No hay libros que coincidan con "{{ buscar }}". } @else { Aún no hay libros. Agrega el primero. }
+    </div>
+  } @else {
+    <div class="estante">
+      @for (l of lista(); track l.idLibro) {
+        <article class="libro">
+          <app-book-cover [titulo]="l.titulo" [autor]="l.autor" [imagen]="l.imagen" />
+          <div class="datos">
+            <h3>{{ l.titulo }}</h3>
+            <p class="muted">{{ l.autor }}</p>
+            <p class="meta">
+              <span class="sello sello-neutro">{{ l.nombreCategoria }}</span>
+              @if (l.seccionEspecial) { <span class="sello sello-info">{{ l.seccionEspecial }}</span> }
+            </p>
+            <p [class]="l.ejemplaresDisponibles > 0 ? 'disp ok' : 'disp no'">
+              @if (l.ejemplaresDisponibles > 0) { {{ l.ejemplaresDisponibles }} {{ l.ejemplaresDisponibles === 1 ? 'ejemplar disponible' : 'ejemplares disponibles' }} }
+              @else { Sin ejemplares disponibles }
+            </p>
+            <div class="acciones-libro">
+              <a [routerLink]="['/libros/editar', l.idLibro]" class="btn btn-sec btn-chico">Editar</a>
+              <button type="button" class="btn btn-peligro btn-chico" (click)="eliminar(l)">Eliminar</button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
