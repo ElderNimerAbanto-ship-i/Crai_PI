@@ -57,7 +57,7 @@ public class PrestamoProcedimientoRepository {
 
         // Errores lanzados con RAISE_APPLICATION_ERROR en el procedimiento o en el trigger
         // Ej: ORA-20015 "El codigo universitario no existe o no tiene acceso habilitado."
-        //     ORA-20011 "Los dias de prestamo deben estar entre 1 y 30"
+        //     ORA-20011 "Los dias de prestamo deben estar entre 1 y 5"
         if (codigo >= ORA_APP_ERROR_MIN && codigo <= ORA_APP_ERROR_MAX) {
             return new BusinessRuleException(limpiarMensaje(sql.getMessage()));
         }

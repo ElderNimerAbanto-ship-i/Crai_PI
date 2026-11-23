@@ -12,8 +12,8 @@ CREATE OR REPLACE PROCEDURE sp_registrar_prestamo (
   VN_ACTIVOS    NUMBER;
 BEGIN
   -- 1. Días de préstamo
-  IF PV_DIAS IS NULL OR PV_DIAS NOT BETWEEN 1 AND 30 THEN
-    RAISE_APPLICATION_ERROR(-20011, 'Los dias de prestamo deben estar entre 1 y 30');
+  IF PV_DIAS IS NULL OR PV_DIAS NOT BETWEEN 1 AND 5 THEN
+    RAISE_APPLICATION_ERROR(-20011, 'Los dias de prestamo deben estar entre 1 y 5');
   END IF;
 
   -- 2. Usuario por código universitario (estado_acceso es NUMBER)
